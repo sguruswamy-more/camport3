@@ -138,6 +138,14 @@ CalibInfoPtr getCalibFromDevice(TY_DEV_HANDLE hDevice, bool org)
   return calibPtr;
 }
 
+void printExtrinsics(TY_CAMERA_EXTRINSIC& extrinsics){
+  printf("%f %f %f %f\n", extrinsics.data[0], extrinsics.data[1], extrinsics.data[2], extrinsics.data[3]);
+  printf("%f %f %f %f\n", extrinsics.data[4], extrinsics.data[5], extrinsics.data[6], extrinsics.data[7]);
+  printf("%f %f %f %f\n", extrinsics.data[8], extrinsics.data[9], extrinsics.data[10], extrinsics.data[11]);
+  printf("%f %f %f %f\n", extrinsics.data[12], extrinsics.data[13], extrinsics.data[14], extrinsics.data[15]);
+  return;
+}
+
 int main(int argc, char* argv[])
 {
     std::string ID, IP;
@@ -213,6 +221,62 @@ int main(int argc, char* argv[])
     calibPtr->setTimeStamp(getLocalTime());
     CalibToJson(calibPtr, outJson);
     LOGD("Save calib info to Json file %s", outJson.c_str());
+
+    // MORE TESTS
+    TY_CAMERA_CALIB_INFO color_calib;
+    TY_CAMERA_CALIB_INFO right_calib;
+    TYGetStruct(hDevice, TY_COMPONENT_RGB_CAM_LEFT, TY_STRUCT_CAM_CALIB_DATA, &color_calib, sizeof(color_calib));
+    TYGetStruct(hDevice, TY_COMPONENT_IR_CAM_RIGHT, TY_STRUCT_CAM_CALIB_DATA, &right_calib, sizeof(right_calib));
+    LOGD("Color calib extrinsics from TY_STRUCT_CAM_CALIB_DATA: \n");
+    printExtrinsics(color_calib.extrinsic);
+    LOGD("Right calib extrinsics from TY_STRUCT_CAM_CALIB_DATA: \n");
+    printExtrinsics(right_calib.extrinsic);
+  
+    TY_STATUS status;
+    LOGD("Get color extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH: \n");
+
+    TY_CAMERA_EXTRINSIC color_extrinsics;
+    status = TYGetStruct(hDevice, TY_COMPONENT_RGB_CAM_LEFT, TY_STRUCT_EXTRINSIC_TO_DEPTH, &color_extrinsics, sizeof(color_extrinsics));
+    if (status == TY_STATUS_OK) {
+      printExtrinsics(color_extrinsics);
+    } else {
+      LOGD("Failed to get color extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH");
+    }
+
+    TY_CAMERA_EXTRINSIC right_extrinsics;
+    LOGD("Get right extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH: \n");
+    status = TYGetStruct(hDevice, TY_COMPONENT_IR_CAM_RIGHT, TY_STRUCT_EXTRINSIC_TO_DEPTH, &right_extrinsics, sizeof(right_extrinsics));
+    if (status == TY_STATUS_OK) {
+      printExtrinsics(right_extrinsics);
+    } else {
+      LOGD("Failed to get right extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH");
+    }
+    TY_CAMERA_EXTRINSIC left_extrinsics;
+    LOGD("Get left extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH: \n");
+    status = TYGetStruct(hDevice, TY_COMPONENT_IR_CAM_LEFT, TY_STRUCT_EXTRINSIC_TO_DEPTH, &left_extrinsics, sizeof(left_extrinsics));
+    if (status == TY_STATUS_OK) {
+      printExtrinsics(left_extrinsics);
+    } else {
+      LOGD("Failed to get left extrinsics from TY_STRUCT_EXTRINSIC_TO_DEPTH\n");
+    }
+
+
+    LOGD("Get color extrinsics from TY_STRUCT_EXTRINSIC_TO_IR_LEFT: \n");
+    status = TYGetStruct(hDevice, TY_COMPONENT_RGB_CAM_LEFT, TY_STRUCT_EXTRINSIC_TO_IR_LEFT, &color_extrinsics, sizeof(color_extrinsics));
+    if (status == TY_STATUS_OK) {
+      printExtrinsics(color_extrinsics);
+    } else {
+      LOGD("Failed to get color extrinsics from TY_STRUCT_EXTRINSIC_TO_IR_LEFT\n");
+    }
+
+    LOGD("Get right extrinsics from TY_STRUCT_EXTRINSIC_TO_IR_LEFT: \n");
+    status = TYGetStruct(hDevice, TY_COMPONENT_IR_CAM_RIGHT, TY_STRUCT_EXTRINSIC_TO_IR_LEFT, &right_extrinsics, sizeof(right_extrinsics));
+    if (status == TY_STATUS_OK) {
+      printExtrinsics(right_extrinsics);
+    } else {
+      LOGD("Failed to get right extrinsics from TY_STRUCT_EXTRINSIC_TO_IR_LEFT\n");
+    }
+
 
     ASSERT_OK( TYCloseDevice(hDevice));
     ASSERT_OK( TYCloseInterface(hIface) );

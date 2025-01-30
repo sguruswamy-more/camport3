@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 option(BUILD_SAMPLE_V1 "Enable samle v1 build " ON)
 
-option(BUILD_SAMPLE_V2 "Enable samle v2 build " ON)
+option(BUILD_SAMPLE_V2 "Enable samle v2 build " OFF)
 
 if (DEFINED BUILD_SAMPLES AND NOT BUILD_SAMPLES)
     set(BUILD_SAMPLE_V1 OFF)
